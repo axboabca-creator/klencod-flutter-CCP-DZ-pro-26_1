@@ -270,3 +270,198 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 }
+class MainAppScreen extends StatelessWidget {
+  const MainAppScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("CCP DZ Pro 26 - لوحة التحكم", style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.orange[800],
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            const ReverseFeeCalculatorWidget(),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.orange, minimumSize: const Size(double.infinity, 50)),
+              onPressed: () {
+                generateAndExportChequePdf("أربعة وثلاثون ألفاً وتسعمائة دينار", "34900");
+              },
+              icon: const Icon(Icons.picture_as_pdf, color: Colors.white),
+              label: const Text("تصدير وطباعة الصك كملف PDF", style: TextStyle(color: Colors.white, fontSize: 16)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+import 'package:flutter/material.dart';
+
+class AllInOneCcpScreen extends StatefulWidget {
+  const AllInOneCcpScreen({super.key});
+
+  @override
+  State<AllInOneCcpScreen> createState() => _AllInOneCcpScreenState();
+}
+
+class _AllInOneCcpScreenState extends State<AllInOneCcpScreen> {
+  String inputAmountStr = "34900"; // مبلغ افتراضي للتجربة
+
+  // دالة لتحديث المبلغ عبر لوحة المفاتيح المصغرة
+  void _appendDigit(String digit) {
+    setState(() {
+      if (inputAmountStr == "0") {
+        inputAmountStr = digit;
+      } else {
+        inputAmountStr += digit;
+      }
+    });
+  }
+
+  void _deleteLast() {
+    setState(() {
+      if (inputAmountStr.length > 1) {
+        inputAmountStr = inputAmountStr.substring(0, inputAmountStr.length - 1);
+      } else {
+        inputAmountStr = "0";
+      }
+    });
+  }
+
+  void _clear() => setState(() => inputAmountStr = "0");
+
+  @override
+  Widget build(BuildContext context) {
+    int currentAmount = int.tryParse(inputAmountStr) ?? 0;
+    int notes2000 = currentAmount ~/ 2000;
+    int notes500 = (currentAmount % 2000) ~/ 500;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("CCP DZ Pro 26 - الشاشة الشاملة", style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.orange[800],
+        centerTitle: true,
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(12.0),
+        child: Column(
+          children: [
+            // --- 1. قسم إدخال وعرض المبلغ ---
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 5)],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  IconButton(icon: const Icon(Icons.delete_sweep, color: Colors.red), onPressed: _clear, tooltip: "مسح الكل"),
+                  Text("$currentAmount DA", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.orange[900])),
+                  IconButton(icon: const Icon(Icons.backspace, color: Colors.orange), onPressed: _deleteLast, tooltip: "حذف رقم"),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // --- 2. محاكاة الصك البريدي التفاعلي (يوضح كل شيء بصرياً) ---
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFDD0), // لون الصك البريدي
+                border: Border.all(color: Colors.orange, width: 2),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text("البريد الجزائري Algérie Poste", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(color: Colors.white, border: Border.all(color: Colors.black54)),
+                        child: Text("DA # $currentAmount #", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 10),
+                  const Text("مبلغ قدره بالحروف:", style: TextStyle(fontSize: 11, color: Colors.grey)),
+                  Text(
+                    currentAmount == 34900 ? "أربعة وثلاثون ألفاً وتسعمائة دينار" : "$currentAmount دينار جزائري",
+                    style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14),
+                  ),
+                  const SizedBox(height: 10),
+                  const Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text("لأمر: أنا شخصياً", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      Text("التوقيع / Signature", style: TextStyle(fontSize: 11)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // --- 3. تفكيك الكتلة النقدية (مع عدد الأوراق) ---
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.orange[50],
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.orange.shade200),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  Column(
+                    children: [
+                      const Text("فئة 2000 دج", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      const SizedBox(height: 4),
+                      Text("$notes2000 ورقة", style: const TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 16)),
+                    ],
+                  ),
+                  const VerticalDivider(color: Colors.orange),
+                  Column(
+                    children: [
+                      const Text("فئة 500 دج", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                      const SizedBox(height: 4),
+                      Text("$notes500 ورقة", style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 16)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // --- 4. لوحة الأرقام السريعة للإدخال الفوري ---
+            GridView.count(
+              crossAxisCount: 4,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              crossAxisSpacing: 6,
+              mainAxisSpacing: 6,
+              childAspectRatio: 2.2,
+              children: ["1", "2", "3", "0", "4", "5", "6", "00", "7", "8", "9", "000"].map((txt) {
+                return ElevatedButton(
+                  style: ElevatedButton.styleFrom(backgroundColor: Colors.white, foregroundColor: Colors.black87),
+                  onPressed: () => _appendDigit(txt),
+                  child: Text(txt, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                );
+              }).toList(),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
