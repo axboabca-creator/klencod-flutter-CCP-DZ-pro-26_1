@@ -259,3 +259,142 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 }
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+void main() {
+  runApp(const CcpDzApp());
+}
+
+class CcpDzApp extends StatefulWidget {
+  const CcpDzApp({super.key});
+
+  @override
+  State<CcpDzApp> createState() => _CcpDzAppState();
+}
+
+class _CcpDzAppState extends State<CcpDzApp> {
+  String _currentLang = 'ar';
+
+  void _changeLanguage(String lang) {
+    setState(() {
+      _currentLang = lang;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'CCP DZ Pro 2026',
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primarySwatch: Colors.orange,
+        scaffoldBackgroundColor: const Color(0xFFAFAFAF),
+        appBarTheme: const AppBarTheme(
+          backgroundColor: Colors.orangeAccent,
+          foregroundColor: Colors.white,
+          centerTitle: true,
+          elevation: 2,
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.orangeAccent,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
+          ),
+        ),
+      ),
+      home: HomeScreen(
+        currentLang: _currentLang,
+        onLangChanged: _changeLanguage,
+      ),
+    );
+  }
+}
+
+class HomeScreen extends StatefulWidget {
+  final String currentLang;
+  final Function(String) onLangChanged;
+
+  const HomeScreen({
+    super.key,
+    required this.currentLang,
+    required this.onLangChanged,
+  });
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _selectedIndex = 0;
+
+  bool get isAr => widget.currentLang == 'ar';
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> pages = [
+      KeyCalculatorScreen(isAr: isAr),
+      ChequeSimulatorScreen(isAr: isAr),
+      MasseMonetaireScreen(isAr: isAr), // تم التصحيح هنا
+      TaxesCalculatorScreen(isAr: isAr),
+      SettingsScreen(
+        currentLang: widget.currentLang,
+        onLangChanged: widget.onLangChanged,
+      ),
+    ];
+
+    final List<String> titles = [
+      isAr ? 'حساب المفتاح و RIP' : 'Calculateur Clé & RIP',
+      isAr ? 'ملء الصك البريدي' : 'Remplir un Chèque',
+      isAr ? 'تفكيك الكتلة النقدية' : 'Masse Monétaire',
+      isAr ? 'حاسبة الرسوم' : 'Taxes & Frais',
+      isAr ? 'الإعدادات والمعلومات' : 'Paramètres',
+    ];
+
+    return Directionality(
+      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(
+            titles[_selectedIndex],
+            style: const TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        body: pages[_selectedIndex],
+        bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _selectedIndex,
+          onTap: (index) => setState(() => _selectedIndex = index),
+          selectedItemColor: Colors.orange.shade800,
+          unselectedItemColor: Colors.grey.shade600,
+          type: BottomNavigationBarType.fixed,
+          items: [
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.vpn_key),
+              label: isAr ? 'المفتاح' : 'Clé/RIP',
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.edit_document),
+              label: isAr ? 'الصك' : 'Chèque',
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.attach_money),
+              label: isAr ? 'النقود' : 'Monnaie',
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.calculate),
+              label: isAr ? 'الرسوم' : 'Taxes',
+            ),
+            BottomNavigationBarItem(
+              icon: const Icon(Icons.settings),
+              label: isAr ? 'الإعدادات' : 'Settings',
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
