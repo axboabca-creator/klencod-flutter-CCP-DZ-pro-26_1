@@ -320,7 +320,6 @@ class SettingsScreen extends StatelessWidget {
 }
 
 
-import 'package:flutter/material.dart';
 
 class ChequeSimulatorScreen extends StatefulWidget {
   const ChequeSimulatorScreen({super.key});
