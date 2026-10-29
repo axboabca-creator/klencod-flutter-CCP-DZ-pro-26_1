@@ -104,7 +104,7 @@ class _PinLockScreenState extends State<PinLockScreen> {
 }
 
 // ==========================================
-// 2. الشاشة الرئيسية للتطبيق
+// 2. الشاشة الرئيسية للتطبيق (مع زر الانتقال للصك)
 // ==========================================
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -114,7 +114,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String inputAmountStr = "4580"; // المبلغ التجريبي الذي ذكرته
+  String inputAmountStr = "4580";
 
   void _appendDigit(String digit) {
     setState(() {
@@ -134,23 +134,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     int amount = int.tryParse(inputAmountStr) ?? 0;
 
-    // حساب تفكيك الكتلة النقدية الشامل لكل الفئات الجزائرية
     int n2000 = amount ~/ 2000;
     int rem = amount % 2000;
-
     int n1000 = rem ~/ 1000;
     rem %= 1000;
-
     int n500 = rem ~/ 500;
     rem %= 500;
-
     int n200 = rem ~/ 200;
     rem %= 200;
-
     int n100 = rem ~/ 100;
     rem %= 100;
-
-    int coins = rem; // القطع المعدنية المتبقية (مثل 80 أو 50 دج)
+    int coins = rem;
 
     return Scaffold(
       appBar: AppBar(
@@ -185,30 +179,25 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 10),
 
-            // محاكاة الصك البريدي
-            Container(
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: const Color(0xFFFFFDD0),
-                border: Border.all(color: Colors.orange, width: 2),
-                borderRadius: BorderRadius.circular(10),
+            // زر الانتقال إلى شاشة ملء الصك البريدي الاحترافية
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange[700],
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 45),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text("البريد الجزائري Algérie Poste", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 10),
-                  Text("المبلغ: $amount دينار جزائري", style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14)),
-                ],
-              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const ChequeSimulatorScreen()),
+                );
+              },
+              icon: const Icon(Icons.receipt_long),
+              label: const Text("فتح واجهة ملء الصك البريدي", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 10),
 
-            // ==========================================
-            // [مکان مخصص 1]: يمكنك إضافة أي أداة جديدة هنا مستقبلاً (مثل حاسبة رسوم أو غيرها)
-            // ==========================================
-
-            // تفكيك الكتلة النقدية الشامل (جميع الفئات)
+            // تفكيك الكتلة النقدية الشامل
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(color: Colors.orange[50], borderRadius: BorderRadius.circular(12)),
@@ -254,10 +243,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               }).toList(),
             ),
-
-            // ==========================================
-            // [مكان مخصص 2]: ترك هذا المكان الفارغ لإضافة أزرار أو ميزات برمجية لاحقة
-            // ==========================================
           ],
         ),
       ),
@@ -275,52 +260,8 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 // ==========================================
-// 3. شاشة الإعدادات وحقوق المبرمج
+// 3. شاشة ملء الصك البريدي (المطابقة للصور)
 // ==========================================
-class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("الإعدادات والمعلومات", style: TextStyle(color: Colors.white)),
-        backgroundColor: Colors.orange[800],
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: const Color(0xFF212121),
-                borderRadius: BorderRadius.circular(15),
-                border: Border.all(color: Colors.orange, width: 2),
-              ),
-              child: const Column(
-                children: [
-                  Text("حقوق التطوير والبرمجة", style: TextStyle(color: Colors.grey, fontSize: 12)),
-                  SizedBox(height: 6),
-                  Text("BOABCA AZEDDIN", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
-                  SizedBox(height: 8),
-                  Text("azeddin2005azeddin@gmail.com", style: TextStyle(color: Colors.orange, fontSize: 13)),
-                ],
-              ),
-            ),
-            // ==========================================
-            // [مكان مخصص 3]: لإضافة خيارات إعدادات إضافية مستقبلاً
-            // ==========================================
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-
 class ChequeSimulatorScreen extends StatefulWidget {
   const ChequeSimulatorScreen({super.key});
 
@@ -329,28 +270,25 @@ class ChequeSimulatorScreen extends StatefulWidget {
 }
 
 class _ChequeSimulatorScreenState extends State<ChequeSimulatorScreen> {
-  // متغيرات المدخلات
   final TextEditingController _amountController = TextEditingController(text: "34900");
   final TextEditingController _beneficiaryController = TextEditingController(text: "أنا شخصياً");
   final TextEditingController _cityController = TextEditingController(text: "مستغانم");
   
   String selectedLang = "Ar"; // Ar, Fr, En
 
-  // دالة تحويل المبلغ إلى حروف حسب اللغة المختارة
   String _getAmountInWords(int amount) {
     if (amount == 34900) {
       if (selectedLang == "Ar") return "أربعة وثلاثون ألفاً وتسعمائة دينار جزائري";
       if (selectedLang == "Fr") return "trente-quatre mille neuf cents DA";
       if (selectedLang == "En") return "thirty-four thousand nine hundred DZD";
     }
-    // صيغة عامة أو مبسطة للمبالغ الأخرى
     return "$amount دينار جزائري";
   }
 
   @override
   Widget build(BuildContext context) {
     int amount = int.tryParse(_amountController.text) ?? 0;
-    String dateToday = "29/10/2026"; // التاريخ الحالي
+    String dateToday = "29/10/2026";
 
     return Scaffold(
       appBar: AppBar(
@@ -362,7 +300,6 @@ class _ChequeSimulatorScreenState extends State<ChequeSimulatorScreen> {
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
-            // --- خانات الإدخال للتحكم في الصك ---
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
@@ -407,11 +344,11 @@ class _ChequeSimulatorScreenState extends State<ChequeSimulatorScreen> {
             ),
             const SizedBox(height: 15),
 
-            // --- واجهة الصك البريدي الحقيقي (مطابق للصور) ---
+            // شكل الصك البريدي التفاعلي
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: const Color(0xFFFFFDD0), // لون خلفية الصك البريدي الأصلي
+                color: const Color(0xFFFFFDD0),
                 border: Border.all(color: Colors.orange.shade700, width: 2),
                 borderRadius: BorderRadius.circular(12),
                 boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 8, offset: Offset(0, 3))],
@@ -419,11 +356,9 @@ class _ChequeSimulatorScreenState extends State<ChequeSimulatorScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // شريط خيارات اللغة ورقم الصك العلوي
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      // أزرار اختيار اللغات Ar, Fr, En مثل الصور[span_17](start_span)[span_17](end_span)[span_18](start_span)[span_18](end_span)[span_19](start_span)[span_19](end_span)
                       Row(
                         children: [
                           _buildLangRadio("Ar"),
@@ -431,7 +366,6 @@ class _ChequeSimulatorScreenState extends State<ChequeSimulatorScreen> {
                           _buildLangRadio("En"),
                         ],
                       ),
-                      // مربع المبلغ العلوي[span_20](start_span)[span_20](end_span)[span_21](start_span)[span_21](end_span)
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                         decoration: BoxDecoration(
@@ -444,8 +378,6 @@ class _ChequeSimulatorScreenState extends State<ChequeSimulatorScreen> {
                     ],
                   ),
                   const SizedBox(height: 15),
-
-                  // العبارة الثابتة في الصك
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -454,8 +386,6 @@ class _ChequeSimulatorScreenState extends State<ChequeSimulatorScreen> {
                     ],
                   ),
                   const SizedBox(height: 15),
-
-                  // المبلغ بالحروف (يترجم حسب اللغة المختارة)[span_22](start_span)[span_22](end_span)[span_23](start_span)[span_23](end_span)[span_24](start_span)[span_24](end_span)
                   Center(
                     child: Text(
                       _getAmountInWords(amount),
@@ -464,19 +394,15 @@ class _ChequeSimulatorScreenState extends State<ChequeSimulatorScreen> {
                     ),
                   ),
                   const Divider(color: Colors.orange, thickness: 1, height: 25),
-
-                  // خانة لأمر (المستفيد)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(selectedLang == "Ar" ? "أنا شخصياً" : (_beneficiaryController.text.isEmpty ? "Moi-même" : _beneficiaryController.text),
+                      Text(_beneficiaryController.text.isEmpty ? "أنا شخصياً" : _beneficiaryController.text,
                           style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
                       const Text("لأمر A l'ordre de", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
                     ],
                   ),
                   const SizedBox(height: 20),
-
-                  // تاريخ التحرير والمدينة والتوقيع[span_25](start_span)[span_25](end_span)[span_26](start_span)[span_26](end_span)[span_27](start_span)[span_27](end_span)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -486,7 +412,7 @@ class _ChequeSimulatorScreenState extends State<ChequeSimulatorScreen> {
                         children: [
                           Text("التوقيع / Signature", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                           SizedBox(height: 4),
-                          Icon(Icons.edit, size: 18, color: Colors.blue), // رمز القلم للتوقيع مثل الصور
+                          Icon(Icons.edit, size: 18, color: Colors.blue),
                         ],
                       ),
                     ],
@@ -500,7 +426,6 @@ class _ChequeSimulatorScreenState extends State<ChequeSimulatorScreen> {
     );
   }
 
-  // ودجت صغيرة لتصميم أزرار اختيار اللغات (Ar, Fr, En)
   Widget _buildLangRadio(String langCode) {
     bool isSelected = selectedLang == langCode;
     return InkWell(
@@ -516,6 +441,48 @@ class _ChequeSimulatorScreenState extends State<ChequeSimulatorScreen> {
               onChanged: (val) => setState(() => selectedLang = val!),
             ),
             Text(langCode, style: TextStyle(fontWeight: FontWeight.bold, color: isSelected ? Colors.orange[900] : Colors.black87)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ==========================================
+// 4. شاشة الإعدادات وحقوق المبرمج
+// ==========================================
+class SettingsScreen extends StatelessWidget {
+  const SettingsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("الإعدادات والمعلومات", style: TextStyle(color: Colors.white)),
+        backgroundColor: Colors.orange[800],
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF212121),
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: Colors.orange, width: 2),
+              ),
+              child: const Column(
+                children: [
+                  Text("حقوق التطوير والبرمجة", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                  SizedBox(height: 6),
+                  Text("BOABCA AZEDDIN", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
+                  SizedBox(height: 8),
+                  Text("azeddin2005azeddin@gmail.com", style: TextStyle(color: Colors.orange, fontSize: 13)),
+                ],
+              ),
+            ),
           ],
         ),
       ),
