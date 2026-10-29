@@ -13,13 +13,13 @@ class CcpProApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'CCP DZ Pro 26',
       theme: ThemeData(primarySwatch: Colors.orange),
-      home: const PinLockScreen(), // تبدأ بشاشة الرمز السري للأمان
+      home: const PinLockScreen(),
     );
   }
 }
 
 // ==========================================
-// 1. شاشة قفل الرمز السري
+// 1. شاشة قفل الرمز السري (الأمان)
 // ==========================================
 class PinLockScreen extends StatefulWidget {
   const PinLockScreen({super.key});
@@ -114,7 +114,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String inputAmountStr = "34900";
+  String inputAmountStr = "4580"; // المبلغ التجريبي الذي ذكرته
 
   void _appendDigit(String digit) {
     setState(() {
@@ -132,9 +132,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    int currentAmount = int.tryParse(inputAmountStr) ?? 0;
-    int notes2000 = currentAmount ~/ 2000;
-    int notes500 = (currentAmount % 2000) ~/ 500;
+    int amount = int.tryParse(inputAmountStr) ?? 0;
+
+    // حساب تفكيك الكتلة النقدية الشامل لكل الفئات الجزائرية
+    int n2000 = amount ~/ 2000;
+    int rem = amount % 2000;
+
+    int n1000 = rem ~/ 1000;
+    rem %= 1000;
+
+    int n500 = rem ~/ 500;
+    rem %= 500;
+
+    int n200 = rem ~/ 200;
+    rem %= 200;
+
+    int n100 = rem ~/ 100;
+    rem %= 100;
+
+    int coins = rem; // القطع المعدنية المتبقية (مثل 80 أو 50 دج)
 
     return Scaffold(
       appBar: AppBar(
@@ -154,6 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
+            // شاشة عرض المبلغ
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 5)]),
@@ -161,12 +178,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(icon: const Icon(Icons.delete_sweep, color: Colors.red), onPressed: _clear),
-                  Text("$currentAmount DA", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.orange[900])),
+                  Text("$amount DA", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.orange[900])),
                   IconButton(icon: const Icon(Icons.backspace, color: Colors.orange), onPressed: _deleteLast),
                 ],
               ),
             ),
             const SizedBox(height: 10),
+
+            // محاكاة الصك البريدي
             Container(
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
@@ -179,23 +198,47 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   const Text("البريد الجزائري Algérie Poste", style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 10),
-                  Text("المبلغ: $currentAmount دينار جزائري", style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14)),
+                  Text("المبلغ: $amount دينار جزائري", style: const TextStyle(color: Colors.blue, fontWeight: FontWeight.bold, fontSize: 14)),
                 ],
               ),
             ),
             const SizedBox(height: 10),
+
+            // ==========================================
+            // [مکان مخصص 1]: يمكنك إضافة أي أداة جديدة هنا مستقبلاً (مثل حاسبة رسوم أو غيرها)
+            // ==========================================
+
+            // تفكيك الكتلة النقدية الشامل (جميع الفئات)
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(color: Colors.orange[50], borderRadius: BorderRadius.circular(12)),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
+              child: Column(
                 children: [
-                  Text("فئة 2000 دج: $notes2000 ورقة", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.green)),
-                  Text("فئة 500 دج: $notes500 ورقة", style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue)),
+                  const Text("تفصيل الأوراق والقطع النقدية المطلوبة:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                  const Divider(),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildNoteItem("2000 دج", n2000),
+                      _buildNoteItem("1000 دج", n1000),
+                      _buildNoteItem("500 دج", n500),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      _buildNoteItem("200 دج", n200),
+                      _buildNoteItem("100 دج", n100),
+                      _buildNoteItem("قطع متبقية", coins),
+                    ],
+                  ),
                 ],
               ),
             ),
             const SizedBox(height: 10),
+
+            // لوحة الأرقام السريعة
             GridView.count(
               crossAxisCount: 4,
               shrinkWrap: true,
@@ -211,9 +254,22 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               }).toList(),
             ),
+
+            // ==========================================
+            // [مكان مخصص 2]: ترك هذا المكان الفارغ لإضافة أزرار أو ميزات برمجية لاحقة
+            // ==========================================
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildNoteItem(String title, int count) {
+    return Column(
+      children: [
+        Text(title, style: const TextStyle(fontSize: 11, color: Colors.grey)),
+        Text("$count", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87)),
+      ],
     );
   }
 }
@@ -253,145 +309,9 @@ class SettingsScreen extends StatelessWidget {
                 ],
               ),
             ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-
-void main() {
-  runApp(const CcpDzApp());
-}
-
-class CcpDzApp extends StatefulWidget {
-  const CcpDzApp({super.key});
-
-  @override
-  State<CcpDzApp> createState() => _CcpDzAppState();
-}
-
-class _CcpDzAppState extends State<CcpDzApp> {
-  String _currentLang = 'ar';
-
-  void _changeLanguage(String lang) {
-    setState(() {
-      _currentLang = lang;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'CCP DZ Pro 2026',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        primarySwatch: Colors.orange,
-        scaffoldBackgroundColor: const Color(0xFFAFAFAF),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.orangeAccent,
-          foregroundColor: Colors.white,
-          centerTitle: true,
-          elevation: 2,
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.orangeAccent,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 16),
-          ),
-        ),
-      ),
-      home: HomeScreen(
-        currentLang: _currentLang,
-        onLangChanged: _changeLanguage,
-      ),
-    );
-  }
-}
-
-class HomeScreen extends StatefulWidget {
-  final String currentLang;
-  final Function(String) onLangChanged;
-
-  const HomeScreen({
-    super.key,
-    required this.currentLang,
-    required this.onLangChanged,
-  });
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
-
-  bool get isAr => widget.currentLang == 'ar';
-
-  @override
-  Widget build(BuildContext context) {
-    final List<Widget> pages = [
-      KeyCalculatorScreen(isAr: isAr),
-      ChequeSimulatorScreen(isAr: isAr),
-      MasseMonetaireScreen(isAr: isAr), // تم التصحيح هنا
-      TaxesCalculatorScreen(isAr: isAr),
-      SettingsScreen(
-        currentLang: widget.currentLang,
-        onLangChanged: widget.onLangChanged,
-      ),
-    ];
-
-    final List<String> titles = [
-      isAr ? 'حساب المفتاح و RIP' : 'Calculateur Clé & RIP',
-      isAr ? 'ملء الصك البريدي' : 'Remplir un Chèque',
-      isAr ? 'تفكيك الكتلة النقدية' : 'Masse Monétaire',
-      isAr ? 'حاسبة الرسوم' : 'Taxes & Frais',
-      isAr ? 'الإعدادات والمعلومات' : 'Paramètres',
-    ];
-
-    return Directionality(
-      textDirection: isAr ? TextDirection.rtl : TextDirection.ltr,
-      child: Scaffold(
-        appBar: AppBar(
-          title: Text(
-            titles[_selectedIndex],
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        ),
-        body: pages[_selectedIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _selectedIndex,
-          onTap: (index) => setState(() => _selectedIndex = index),
-          selectedItemColor: Colors.orange.shade800,
-          unselectedItemColor: Colors.grey.shade600,
-          type: BottomNavigationBarType.fixed,
-          items: [
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.vpn_key),
-              label: isAr ? 'المفتاح' : 'Clé/RIP',
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.edit_document),
-              label: isAr ? 'الصك' : 'Chèque',
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.attach_money),
-              label: isAr ? 'النقود' : 'Monnaie',
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.calculate),
-              label: isAr ? 'الرسوم' : 'Taxes',
-            ),
-            BottomNavigationBarItem(
-              icon: const Icon(Icons.settings),
-              label: isAr ? 'الإعدادات' : 'Settings',
-            ),
+            // ==========================================
+            // [مكان مخصص 3]: لإضافة خيارات إعدادات إضافية مستقبلاً
+            // ==========================================
           ],
         ),
       ),
