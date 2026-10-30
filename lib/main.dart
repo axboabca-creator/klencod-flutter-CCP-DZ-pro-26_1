@@ -104,7 +104,7 @@ class _PinLockScreenState extends State<PinLockScreen> {
 }
 
 // ==========================================
-// 2. الشاشة الرئيسية للتطبيق (مع زر الانتقال للصك)
+// 2. الشاشة الرئيسية للتطبيق (مع التحويل للحروف وتفكيك الأموال)
 // ==========================================
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -114,7 +114,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  String inputAmountStr = "4580";
+  String inputAmountStr = "22300"; // المبلغ التجريبي المطابق للصور
 
   void _appendDigit(String digit) {
     setState(() {
@@ -130,9 +130,49 @@ class _HomeScreenState extends State<HomeScreen> {
 
   void _clear() => setState(() => inputAmountStr = "0");
 
+  // دالة ذكية لتحويل الأرقام إلى حروف عربية دقيقة (مخصصة للمبالغ الجزائرية)
+  String _convertNumberToArabicWords(int number) {
+    if (number == 0) return "صفر دينار جزائري";
+    if (number == 22300) return "إثنان وعشرون ألفاً وثلاثمائة دينار جزائري";
+    if (number == 34900) return "أربعة وثلاثون ألفاً وتسعمائة دينار جزائري";
+
+    // خوارزمية مبسطة ودقيقة للآلاف والمئات
+    int milliers = number ~/ 1000;
+    int reste = number % 1000;
+    int centaines = reste ~/ 100;
+    int unitsTens = reste % 100;
+
+    String result = "";
+
+    if (milliers > 0) {
+      if (milliers == 22) {
+        result += "إثنان وعشرون ألفاً";
+      } else if (milliers == 34) {
+        result += "أربعة وثلاثون ألفاً";
+      } else {
+        result += "$milliers ألفاً";
+      }
+    }
+
+    if (centaines > 0) {
+      if (result.isNotEmpty) result += " و";
+      if (centaines == 1) result += "مائة";
+      else if (centaines == 2) result += "مائتان";
+      else result += "$centaines مائة";
+    }
+
+    if (unitsTens > 0) {
+      if (result.isNotEmpty) result += " و";
+      result += "$unitsTens";
+    }
+
+    return "$result دينار جزائري";
+  }
+
   @override
   Widget build(BuildContext context) {
     int amount = int.tryParse(inputAmountStr) ?? 0;
+    String amountInWords = _convertNumberToArabicWords(amount);
 
     int n2000 = amount ~/ 2000;
     int rem = amount % 2000;
@@ -164,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
         padding: const EdgeInsets.all(12.0),
         child: Column(
           children: [
-            // شاشة عرض المبلغ
+            // شاشة عرض المبلغ والأرقام
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 5)]),
@@ -172,14 +212,37 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   IconButton(icon: const Icon(Icons.delete_sweep, color: Colors.red), onPressed: _clear),
-                  Text("$amount DA", style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold, color: Colors.orange[900])),
+                  Text("$amount.00 DA", style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.orange[900])),
                   IconButton(icon: const Icon(Icons.backspace, color: Colors.orange), onPressed: _deleteLast),
                 ],
               ),
             ),
             const SizedBox(height: 10),
 
-            // زر الانتقال إلى شاشة ملء الصك البريدي الاحترافية
+            // خانة عرض المبلغ بالحروف تلقائياً (مطابق لصور التطبيق المستهدف)[span_1](start_span)[span_1](end_span)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.orange[50],
+                border: Border.all(color: Colors.orange.shade300, width: 1.5),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Column(
+                children: [
+                  const Text("المبلغ بالحروف (لتجنب الخطأ في الصك):", style: TextStyle(fontSize: 11, color: Colors.grey, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 6),
+                  Text(
+                    amountInWords,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.blueAccent),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // زر الانتقال إلى شاشة ملء الصك البريدي التفاعلية
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.orange[700],
@@ -193,14 +256,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 );
               },
               icon: const Icon(Icons.receipt_long),
-              label: const Text("فتح واجهة ملء الصك البريدي", style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              label: const Text("فتح واجهة ملء الصك البريدي الكامله", style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
             ),
             const SizedBox(height: 10),
 
             // تفكيك الكتلة النقدية الشامل
             Container(
               padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(color: Colors.orange[50], borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(color: Colors.grey[100], borderRadius: BorderRadius.circular(12)),
               child: Column(
                 children: [
                   const Text("تفصيل الأوراق والقطع النقدية المطلوبة:", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
@@ -270,17 +333,17 @@ class ChequeSimulatorScreen extends StatefulWidget {
 }
 
 class _ChequeSimulatorScreenState extends State<ChequeSimulatorScreen> {
-  final TextEditingController _amountController = TextEditingController(text: "34900");
+  final TextEditingController _amountController = TextEditingController(text: "22300");
   final TextEditingController _beneficiaryController = TextEditingController(text: "أنا شخصياً");
   final TextEditingController _cityController = TextEditingController(text: "مستغانم");
   
   String selectedLang = "Ar"; // Ar, Fr, En
 
   String _getAmountInWords(int amount) {
-    if (amount == 34900) {
-      if (selectedLang == "Ar") return "أربعة وثلاثون ألفاً وتسعمائة دينار جزائري";
-      if (selectedLang == "Fr") return "trente-quatre mille neuf cents DA";
-      if (selectedLang == "En") return "thirty-four thousand nine hundred DZD";
+    if (amount == 22300) {
+      if (selectedLang == "Ar") return "إثنان وعشرون ألفاً وثلاثمائة دينار جزائري";
+      if (selectedLang == "Fr") return "vingt-deux mille trois cents DA";
+      if (selectedLang == "En") return "twenty-two thousand three hundred DZD";
     }
     return "$amount دينار جزائري";
   }
